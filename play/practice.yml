@@ -1,0 +1,22 @@
+---
+- name: Task execution and managed nodes
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+      - name: This task shall be performed by all managed nodes.
+        ansible.builtin.debug:
+
+      - name: Task execution fails on managed node istio4
+        ansible.builtin.fail:
+        when: inventory_hostname == "istio4"
+
+      - name: This task will be performed by all remaining managed nodes.
+        ansible.builtin.debug:
+
+      - name: Task execution fails on managed node istio2.
+        ansible.builtin.fail:
+        when: inventory_hostname == "istio2"
+
+      - name: This task will be further performed by all remaining managed nodes.
+        ansible.builtin.debug:
