@@ -1,0 +1,6 @@
+---
+- name: Install docker
+  ansible.builtin.apt:
+    name: docker.io
+    update_cache: yes
+    state: latest

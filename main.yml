@@ -1,0 +1,10 @@
+---
+- name: Set up k8s
+  hosts: worker
+  gather_facts: no
+
+  tasks:
+    - name: Install k8s
+      ansible.builtin.import_role:
+        name: install_k8s
+
