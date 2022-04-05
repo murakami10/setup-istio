@@ -7,4 +7,5 @@
     - name: Install k8s
       ansible.builtin.import_role:
         name: install_k8s
+      become: yes
 
