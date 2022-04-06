@@ -8,3 +8,21 @@
   ansible.builtin.systemd:
     state: started
     name: docker
+- name: Swap off
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^(?!#)(.*swap.*)'
+    replace: '#\1'
+  register: result
+- name: Reboot for swap off
+  ansible.builtin.reboot:
+    reboot_timeout: 3600
+  when: result.changed
+- name: Set memory to result
+  ansible.builtin.command: free
+  register: result
+- name: Check swap is zero
+  ansible.builtin.fail:
+    msg: "{{ item }}"
+  loop: '{{ (result.stdout_lines[2] | regex_replace("\s+", " ")).split(" ") }}'
+  when: item not in ['Swap:', '0']
