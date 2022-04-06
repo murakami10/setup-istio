@@ -13,16 +13,41 @@
     path: /etc/fstab
     regexp: '^(?!#)(.*swap.*)'
     replace: '#\1'
-  register: result
+  register: results
 - name: Reboot for swap off
   ansible.builtin.reboot:
     reboot_timeout: 3600
-  when: result.changed
-- name: Set memory to result
-  ansible.builtin.command: free
-  register: result
+  when: results.changed
+- name: Set memory to results
+  ansible.builtin.command:
+    cmd: free
+  changed_when: results['rc'] != 0
+  register: results
 - name: Check swap is zero
   ansible.builtin.fail:
-    msg: "{{ item }}"
-  loop: '{{ (result.stdout_lines[2] | regex_replace("\s+", " ")).split(" ") }}'
+  loop: '{{ (results.stdout_lines[2] | regex_replace("\s+", " ")).split(" ") }}'
   when: item not in ['Swap:', '0']
+- name: Modprove br_netfilter
+  ansible.builtin.command:
+    cmd: modprobe br_netfilter
+  changed_when: results['rc'] != 0
+- name: Set bridge-nf-call-iptables to results
+  ansible.builtin.command:
+    cmd: cat /proc/sys/net/bridge/bridge-nf-call-iptables
+  register: results
+  changed_when: results['rc'] != 0
+- name: Check bridge-nf-call-iptables == 1
+  block:
+    - name: Copy k8s.conf
+      ansible.builtin.copy:
+        src: k8s.conf
+        dest: /etc/sysctl.d/k8s.conf
+    - name: Sysctl reload
+      ansible.builtin.command:
+        cmd: sysctl --system
+    - name: Recheck bridge-nf-call-iptables
+      ansible.builtin.command:
+        cmd: cat /proc/sys/net/bridge/bridge-nf-call-iptables
+      register: results
+      failed_when: results.stdout[0] == "0"
+  when: results.stdout[0] == "0"
