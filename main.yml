@@ -1,6 +1,6 @@
 ---
 - name: Set up k8s
-  hosts: worker
+  hosts: all 
   gather_facts: no
 
   tasks:

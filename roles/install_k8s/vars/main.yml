@@ -1,0 +1,3 @@
+---
+kube_master_init: true
+kube_worker_join: true
