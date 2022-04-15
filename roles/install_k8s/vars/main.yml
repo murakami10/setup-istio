@@ -1,3 +1,4 @@
 ---
 kube_master_init: true
 kube_worker_join: true
+istio_version: 1.13.2

@@ -206,3 +206,28 @@
   when: "'master' in group_names and kube_master_init" 
   become: yes
   become_user: murakami
+- name: Set up Istio
+  block:
+    - name: Download Istio
+      ansible.builtin.shell: curl -L https://istio.io/downloadIstio | ISTIO_VERSION={{istio_version}} sh -
+      become: yes
+      become_user: murakami
+    - name: Copy istioctl
+      ansible.builtin.copy:
+        src: "{{ lookup('env', 'HOME') }}/istio-{{istio_version}}/bin/istioctl"
+        dest: "/usr/local/bin"
+        remote_src: yes
+        owner: "{{ lookup('env', 'USER') }}" 
+        group: "{{ lookup('env', 'USER') }}"
+        mode: "0744"
+    - name: Install Istio (demo profile)
+      ansible.builtin.command:
+        cmd: istioctl install --set profile=demo -y
+      become: yes
+      become_user: murakami
+    - name: Add namespace
+      ansible.builtin.command:
+        cmd: kubectl label namespace default istio-injection=enabled
+      become: yes
+      become_user: murakami
+  when: "'master' in group_names" 
