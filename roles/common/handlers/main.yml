@@ -1,0 +1,14 @@
+---
+- name: Check memory
+  block:
+    - name: Set memory to results
+      ansible.builtin.command:
+        cmd: free
+      changed_when: results['rc'] != 0
+      register: results
+    - name: Check swap is zero
+      ansible.builtin.fail:
+      loop: '{{ (results.stdout_lines[2] | regex_replace("\s+", " ")).split(" ") }}'
+      when: item not in ['Swap:', '0']
+  listen:
+    - check memory

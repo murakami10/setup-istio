@@ -208,7 +208,7 @@
   become_user: murakami
 - name: Set up Istio
   block:
-    - name: Download Istio
+    - name: Download Istio # istioのためにfirewall見直す必要あり、一旦firewall落としている
       ansible.builtin.shell: curl -L https://istio.io/downloadIstio | ISTIO_VERSION={{istio_version}} sh -
       become: yes
       become_user: murakami
