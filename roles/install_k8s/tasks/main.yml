@@ -124,7 +124,7 @@
     - name: Kube reset 
       ansible.builtin.shell: "kubeadm reset --force"
     - name: Kube join
-      ansible.builtin.shell: "{{ hostvars.istio1.kube_cmd }}"
+      ansible.builtin.shell: "{{ hostvars.control.kube_cmd }}"
   when: "'worker' in group_names and kube_worker_join" 
 - name: Download Calico
   ansible.builtin.shell: curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -O
