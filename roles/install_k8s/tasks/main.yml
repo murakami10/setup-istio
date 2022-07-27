@@ -51,60 +51,6 @@
       register: results
       failed_when: results.stdout[0] == "0"
   when: results.stdout[0] == "0"
-- name: Allow port in worker
-  block:
-    - name: Install firewalld
-      ansible.builtin.apt:
-        name: firewalld
-    - name: Allow kubectl port
-      ansible.posix.firewalld:
-        port: "{{ item }}"
-        permanent: yes
-        state: enabled
-      with_items:
-        - 10250/tcp
-        - 10250/udp
-    - name: Alow NodePort
-      ansible.posix.firewalld:
-        port: "{{ item }}"
-        permanent: yes
-        state: enabled
-      with_items:
-        - 30000-32767/tcp
-        - 30000-32767/udp     
-    - name: reload service firewalld
-      ansible.builtin.systemd:
-        name: firewalld
-        state: reloaded
-      changed_when: false
-  when: "'worker' in group_names"
-- name: Allow port in master 
-  block:
-    - name: Install firewalld
-      ansible.builtin.apt:
-        name: firewalld
-    - name: Allow port
-      ansible.posix.firewalld:
-        port: "{{ item }}"
-        permanent: yes
-        state: enabled
-      with_items:
-        - 6443/tcp
-        - 6443/udp
-        - 2379-2380/tcp
-        - 2379-2380/udp
-        - 10250/tcp
-        - 10250/udp
-        - 10251/tcp
-        - 10251/udp
-        - 10252/tcp
-        - 10252/udp
-    - name: reload service firewalld
-      ansible.builtin.systemd:
-        name: firewalld
-        state: reloaded
-      changed_when: false
-  when: "'master' in group_names"
 - name: Install apt-transport-https and curl
   ansible.builtin.apt:
     name: "{{ item }}"
@@ -180,24 +126,6 @@
     - name: Kube join
       ansible.builtin.shell: "{{ hostvars.istio1.kube_cmd }}"
   when: "'worker' in group_names and kube_worker_join" 
-- name: Configure firewalld for calico
-  ansible.posix.firewalld:
-    port: "{{ item }}"
-    permanent: yes
-    state: enabled
-  with_items:
-    - 179/tcp
-    - 179/udp
-    - 4789/tcp
-    - 4789/udp
-    - 5473/tcp
-    - 5473/udp
-    - 4789/tcp
-    - 4789/udp
-    - 443/tcp
-    - 443/udp
-    - 2379/tcp
-    - 2379/udp
 - name: Download Calico
   ansible.builtin.shell: curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -O
   when: "'master' in group_names and kube_master_init" 
